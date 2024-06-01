@@ -43,6 +43,6 @@ export class Wishlist {
   @JoinTable()
   items: Wish[];
 
-  @ManyToOne(() => User, (user) => user.wishlists)
-  user: User;
+  @ManyToOne(() => User)
+  owner: User;
 }

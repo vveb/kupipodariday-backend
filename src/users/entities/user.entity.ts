@@ -1,4 +1,4 @@
-import { IsEmail, IsUrl, Length } from 'class-validator';
+import { IsEmail, IsUrl, Length, MinLength } from 'class-validator';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -41,6 +41,9 @@ export class User {
   email: string;
 
   @Column({ select: false })
+  @MinLength(8, {
+    message: 'Пароль должен содержать не менее 8 символов',
+  })
   //@Exclude()
   password: string;
 
@@ -50,7 +53,7 @@ export class User {
   @OneToMany(() => Offer, (offer) => offer.user, { onDelete: 'CASCADE' })
   offers: Offer[];
 
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.user, {
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.owner, {
     onDelete: 'CASCADE',
   })
   wishlists: Wishlist[];

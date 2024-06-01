@@ -26,19 +26,6 @@ export class UsersService {
   //   return `This action returns all users`;
   // }
 
-  // findUserByUsername(username: string): Promise<User> {
-  //   return this.userRepository
-  //     .findOne({
-  //       where: {
-  //         username: username,
-  //       },
-  //     })
-  //     .then((res) => res)
-  //     .catch((err) => {
-  //       throw new Error(err.message);
-  //     });
-  // }
-
   async findUserByUsername(username: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: {

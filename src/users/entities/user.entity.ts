@@ -23,7 +23,9 @@ export class User {
   updatedAt: Date;
 
   @Column({ unique: true })
-  @Length(2, 30, { message: 'Имя пользователя должно содержать от 2 до 30 символов' })
+  @Length(2, 30, {
+    message: 'Имя пользователя должно содержать от 2 до 30 символов',
+  })
   username: string;
 
   @Column({ default: 'Пока ничего не рассказал о себе' })

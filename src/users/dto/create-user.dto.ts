@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -8,6 +9,7 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
+  @IsNotEmpty()
   @IsString()
   @Length(2, 30)
   username: string;
@@ -25,6 +27,8 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @MinLength(8)
+  @MinLength(8, {
+    message: 'Пароль должен содержать не менее 8-ми символов',
+  })
   password: string;
 }

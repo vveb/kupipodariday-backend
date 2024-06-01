@@ -42,7 +42,7 @@ export class User {
 
   @Column({ select: false })
   @MinLength(8, {
-    message: 'Пароль должен содержать не менее 8 символов',
+    message: 'Пароль должен содержать не менее 8-ми символов',
   })
   //@Exclude()
   password: string;

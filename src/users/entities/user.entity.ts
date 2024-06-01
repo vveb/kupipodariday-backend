@@ -1,4 +1,4 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsEmail, IsUrl, Length } from 'class-validator';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -33,7 +33,8 @@ export class User {
   about: string;
 
   @Column({ default: 'https://i.pravatar.cc/300' })
-  avatar: number;
+  @IsUrl()
+  avatar: string;
 
   @Column({ unique: true, select: false })
   @IsEmail()
@@ -46,11 +47,11 @@ export class User {
   @OneToMany(() => Wish, (wish) => wish.owner, { onDelete: 'CASCADE' })
   wishes: Wish[];
 
-  @OneToMany(() => Offer, (offer) => offer.owner, { onDelete: 'CASCADE' })
+  @OneToMany(() => Offer, (offer) => offer.user, { onDelete: 'CASCADE' })
   offers: Offer[];
 
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.owner, {
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.user, {
     onDelete: 'CASCADE',
   })
-  whishlists: Wishlist[];
+  wishlists: Wishlist[];
 }

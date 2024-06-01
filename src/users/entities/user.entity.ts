@@ -5,7 +5,11 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Wish } from '../../wishes/entities/wish.entity';
+import { Offer } from '../../offers/entities/offer.entity';
+import { Wishlist } from '../../wishlists/entities/wishlist.entity';
 
 @Entity()
 export class User {
@@ -19,14 +23,14 @@ export class User {
   updatedAt: Date;
 
   @Column({ unique: true })
-  @Length(2, 30)
+  @Length(2, 30, { message: 'Имя пользователя должно содержать от 2 до 30 символов' })
   username: string;
 
-  @Column()
+  @Column({ default: 'Пока ничего не рассказал о себе' })
   @Length(2, 200)
   about: string;
 
-  @Column()
+  @Column({ default: 'https://i.pravatar.cc/300' })
   avatar: number;
 
   @Column({ unique: true, select: false })
@@ -37,12 +41,14 @@ export class User {
   //@Exclude()
   password: string;
 
-  @Column()
-  wishes: number;
+  @OneToMany(() => Wish, (wish) => wish.owner, { onDelete: 'CASCADE' })
+  wishes: Wish[];
 
-  @Column()
-  offers: number;
+  @OneToMany(() => Offer, (offer) => offer.owner, { onDelete: 'CASCADE' })
+  offers: Offer[];
 
-  @Column()
-  whishlists: number;
+  @OneToMany(() => Wishlist, (wishlist) => wishlist.owner, {
+    onDelete: 'CASCADE',
+  })
+  whishlists: Wishlist[];
 }

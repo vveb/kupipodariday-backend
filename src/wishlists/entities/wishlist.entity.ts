@@ -1,1 +1,43 @@
-export class Wishlist {}
+import { IsUrl, Length, Max } from 'class-validator';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Wish } from '../../wishes/entities/wish.entity';
+
+@Entity()
+export class Wishlist {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @Column()
+  @Length(1, 250, {
+    message: 'Название списка должно быть от 1 до 250 символов',
+  })
+  name: string;
+
+  @Column()
+  @Max(1500, {
+    message: 'Описание подборки не должно превышать 1 500 символов',
+  })
+  description: string;
+
+  @Column()
+  @IsUrl()
+  image: string;
+
+  @ManyToMany(() => Wish)
+  @JoinTable()
+  items: Wish[];
+}

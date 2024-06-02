@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../utils/decorators/auth-user.decorator';
 import { User } from './entities/user.entity';
@@ -19,32 +18,26 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.signup(createUserDto);
-  }
-
-  // @Get()
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
-
-  @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getCurrentAuthUser(@AuthUser() user: User): Promise<User> {
+  @UseGuards(JwtAuthGuard)
+  getCurrentUser(@AuthUser() user: User): Promise<User> {
     return this.usersService.findOne({
       where: { id: user.id },
     });
   }
 
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateCurrentUser(
+    @AuthUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return this.usersService.update(user.id, updateUserDto);
+  }
+
   @Get(':username')
   getUserByUsername(@Param('username') username: string) {
     return this.usersService.findUserByUsername(username);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')

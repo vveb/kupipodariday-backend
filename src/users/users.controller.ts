@@ -19,7 +19,7 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.usersService.signup(createUserDto);
   }
 
   // @Get()
@@ -27,12 +27,12 @@ export class UsersController {
   //   return this.usersService.findAll();
   // }
 
-  // @Get('me')
-  // async getCurrentAuthUser(@AuthUser() user: User): Promise<User> {
-  //   return this.usersService.findOne({
-  //     where: { id: user.id },
-  //   })
-  // }
+  @Get('me')
+  async getCurrentAuthUser(@AuthUser() user: User): Promise<User> {
+    return this.usersService.findOne({
+      where: { id: user.id },
+    });
+  }
 
   @Get(':username')
   getUserByUsername(@Param('username') username: string) {

@@ -3,23 +3,39 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { hashValue } from '../utils/hash';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto): Promise<User> {
-    return hashValue(createUserDto.password).then((hash) =>
-      this.userRepository.save({
-        ...createUserDto,
-        password: hash,
-      }),
-    );
+  async signup(createUserDto: CreateUserDto): Promise<User> {
+    const user = await this.usersRepository.create({
+      ...createUserDto,
+      password: await hashValue(createUserDto.password),
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const password = updateUserDto.password;
+    const user = await this.findById(id);
+    if (password) {
+      updateUserDto.password = await hashValue(password);
+    }
+    return this.usersRepository.save({ ...user, ...updateUserDto });
+  }
+
+  async findById(id: number): Promise<User> {
+    return await this.usersRepository.findOneBy({ id });
+  }
+
+  findOne(query: FindOneOptions<User>) {
+    return this.usersRepository.findOneOrFail(query);
   }
 
   // findAll() {
@@ -27,7 +43,7 @@ export class UsersService {
   // }
 
   async findUserByUsername(username: string): Promise<User> {
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: {
         username: username,
       },
@@ -36,14 +52,6 @@ export class UsersService {
       return user;
     }
     throw new NotFoundException('Пользователь не найден');
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
   }
 
   remove(id: number) {

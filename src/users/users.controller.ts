@@ -10,6 +10,8 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthUser } from '../utils/decorators/auth-user.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -23,6 +25,13 @@ export class UsersController {
   // @Get()
   // findAll() {
   //   return this.usersService.findAll();
+  // }
+
+  // @Get('me')
+  // async getCurrentAuthUser(@AuthUser() user: User): Promise<User> {
+  //   return this.usersService.findOne({
+  //     where: { id: user.id },
+  //   })
   // }
 
   @Get(':username')

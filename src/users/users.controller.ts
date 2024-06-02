@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
@@ -13,6 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../utils/decorators/auth-user.decorator';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { Wish } from '../wishes/entities/wish.entity';
 
 @Controller('users')
 export class UsersController {
@@ -33,6 +33,16 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.update(user.id, updateUserDto);
+  }
+
+  @Get('me/wishes')
+  @UseGuards(JwtAuthGuard)
+  async getCurrentUserWishes(@AuthUser() user: User): Promise<Wish[]> {
+    const currentUser = await this.usersService.findOne({
+      where: { id: user.id },
+      relations: ['wishes'],
+    });
+    return currentUser.wishes;
   }
 
   @Get(':username')

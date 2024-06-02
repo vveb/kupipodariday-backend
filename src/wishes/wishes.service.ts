@@ -23,10 +23,14 @@ export class WishesService {
   }
 
   async findWishById(id: number) {
-    return await this.wishesRepository.find({
-      where: { id: id },
-      relations: ['owner', 'offers', 'wishlists'],
+    return await this.wishesRepository.findOne({
+      where: { id },
+      relations: ['owner'],
     });
+  }
+
+  async deleteWishById(id: number) {
+    return await this.wishesRepository.delete(id);
   }
 
   // findAll() {

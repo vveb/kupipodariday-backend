@@ -47,6 +47,7 @@ export class Wish {
   @Column({
     type: 'decimal',
     scale: 2,
+    default: 0,
   })
   @IsNumber()
   raised: number;

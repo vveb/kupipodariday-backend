@@ -19,5 +19,4 @@ export class CreateWishDto {
     message: 'Описание подарка должно быть от 1 до 1024 символов',
   })
   description: string;
-
 }

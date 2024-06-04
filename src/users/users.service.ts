@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindOneOptions, Like, Repository } from 'typeorm';
 import { hashValue } from '../utils/hash';
 import { Wish } from '../wishes/entities/wish.entity';
 
@@ -80,9 +80,13 @@ export class UsersService {
     throw new NotFoundException('Пользователь не найден');
   }
 
-  // async findMany(query: string):Promise<User> {
-  //   this.usersRepository.find({
-
-  //   })
-  // }
+  async findMany(query: string): Promise<User[]> {
+    const res = await this.usersRepository.find({
+      where: [{ email: Like(`%${query}%`) }, { username: Like(`%${query}%`) }],
+    });
+    if (res.length > 0) {
+      return res;
+    }
+    throw new NotFoundException('Пользователи не найдены');
+  }
 }

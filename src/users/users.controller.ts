@@ -1,4 +1,12 @@
-import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Post,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../utils/decorators/auth-user.decorator';
@@ -41,5 +49,11 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   getWishesByUsername(@Param('username') username: string): Promise<Wish[]> {
     return this.usersService.findWishesByUsername(username);
+  }
+
+  @Post('find')
+  @UseGuards(JwtAuthGuard)
+  findManyUsers(@Body('query') query: string): Promise<User[]> {
+    return this.usersService.findMany(query);
   }
 }

@@ -6,12 +6,15 @@ import {
   Param,
   UseGuards,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { AuthUser } from '../utils/decorators/auth-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Wish } from './entities/wish.entity';
+import { UpdateWishDto } from './dto/update-wish.dto';
+import { User } from '../users/entities/user.entity';
 
 @Controller('wishes')
 export class WishesController {
@@ -37,6 +40,16 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   getWishById(@Param('id') id: number) {
     return this.wishesService.findWishById(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  updateWishById(
+    @Param('id') wishId: number,
+    @Body() updateWishDto: UpdateWishDto,
+    @AuthUser() user: User,
+  ) {
+    return this.wishesService.updateWish(wishId, updateWishDto, user.id);
   }
 
   @Delete(':id')

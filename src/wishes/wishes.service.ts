@@ -78,8 +78,18 @@ export class WishesService {
     return this.wishesRepository.save({ ...wish, ...updateWishDto });
   }
 
-  async deleteWishById(id: number) {
-    const wish = await this.findWishById(id);
-    return this.wishesRepository.delete(wish.id);
+  async deleteWishById(wishId: number, userId: number) {
+    const wish = await this.findWishById(wishId);
+    if (!wish) {
+      throw new NotFoundException(
+        'Такого желания у нас нет :( Но вы можете его создать! ;)',
+      );
+    }
+    if (wish.owner.id != userId) {
+      throw new ForbiddenException(
+        'Это не ваше желание, так что и удалить его нельзя',
+      );
+    }
+    return this.wishesRepository.delete(wishId);
   }
 }

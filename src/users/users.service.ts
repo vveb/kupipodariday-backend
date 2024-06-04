@@ -14,6 +14,14 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
+  findById(id: number): Promise<User> {
+    return this.usersRepository.findOneBy({ id });
+  }
+
+  findOne(query: FindOneOptions<User>) {
+    return this.usersRepository.findOneOrFail(query);
+  }
+
   async signup(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.usersRepository.create({
       ...createUserDto,
@@ -29,14 +37,6 @@ export class UsersService {
       updateUserDto.password = await hashValue(password);
     }
     return this.usersRepository.save({ ...user, ...updateUserDto });
-  }
-
-  findById(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ id });
-  }
-
-  findOne(query: FindOneOptions<User>) {
-    return this.usersRepository.findOneOrFail(query);
   }
 
   async findCurrentUser(id: number) {

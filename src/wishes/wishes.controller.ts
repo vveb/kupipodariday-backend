@@ -32,19 +32,4 @@ export class WishesController {
   deleteWish(@Param('id') id: number) {
     return this.wishesService.deleteWishById(id);
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.wishesService.findAll();
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateWishDto: UpdateWishDto) {
-  //   return this.wishesService.update(+id, updateWishDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.wishesService.remove(+id);
-  // }
 }

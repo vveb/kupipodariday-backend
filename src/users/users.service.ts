@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { hashValue } from '../utils/hash';
+import { Wish } from '../wishes/entities/wish.entity';
 
 @Injectable()
 export class UsersService {
@@ -21,7 +22,7 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async updateCurrentUser(id: number, updateUserDto: UpdateUserDto) {
     const password = updateUserDto.password;
     const user = await this.findById(id);
     if (password) {
@@ -30,17 +31,42 @@ export class UsersService {
     return this.usersRepository.save({ ...user, ...updateUserDto });
   }
 
-  async findById(id: number): Promise<User> {
-    return await this.usersRepository.findOneBy({ id });
+  findById(id: number): Promise<User> {
+    return this.usersRepository.findOneBy({ id });
   }
 
   findOne(query: FindOneOptions<User>) {
     return this.usersRepository.findOneOrFail(query);
   }
 
-  // findAll() {
-  //   return `This action returns all users`;
-  // }
+  async findCurrentUser(id: number) {
+    const user = await this.findOne({
+      where: { id },
+    });
+    if (user) {
+      return user;
+    }
+    throw new NotFoundException('Пользователь не найден');
+  }
+
+  async findCurrentUserWishes(id: number) {
+    const user = await this.findOne({
+      where: { id },
+      relations: ['wishes'],
+    });
+    return user.wishes;
+  }
+
+  async findWishesByUsername(username: string): Promise<Wish[]> {
+    const user = await this.findOne({
+      where: { username },
+      relations: ['wishes'],
+    });
+    if (user) {
+      return user.wishes;
+    }
+    throw new NotFoundException('Пользователь не найден');
+  }
 
   async findUserByUsername(username: string): Promise<User> {
     const user = await this.usersRepository.findOne({
@@ -54,7 +80,9 @@ export class UsersService {
     throw new NotFoundException('Пользователь не найден');
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  // async findMany(query: string):Promise<User> {
+  //   this.usersRepository.find({
+
+  //   })
+  // }
 }

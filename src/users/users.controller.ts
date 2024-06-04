@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../utils/decorators/auth-user.decorator';
@@ -21,9 +13,7 @@ export class UsersController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@AuthUser() user: User): Promise<User> {
-    return this.usersService.findOne({
-      where: { id: user.id },
-    });
+    return this.usersService.findCurrentUser(user.id);
   }
 
   @Patch('me')
@@ -32,26 +22,24 @@ export class UsersController {
     @AuthUser() user: User,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.update(user.id, updateUserDto);
+    return this.usersService.updateCurrentUser(user.id, updateUserDto);
   }
 
   @Get('me/wishes')
   @UseGuards(JwtAuthGuard)
-  async getCurrentUserWishes(@AuthUser() user: User): Promise<Wish[]> {
-    const currentUser = await this.usersService.findOne({
-      where: { id: user.id },
-      relations: ['wishes'],
-    });
-    return currentUser.wishes;
+  getCurrentUserWishes(@AuthUser() user: User): Promise<Wish[]> {
+    return this.usersService.findCurrentUserWishes(user.id);
   }
 
   @Get(':username')
+  @UseGuards(JwtAuthGuard)
   getUserByUsername(@Param('username') username: string) {
     return this.usersService.findUserByUsername(username);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Get(':username/wishes')
+  @UseGuards(JwtAuthGuard)
+  getWishesByUsername(@Param('username') username: string): Promise<Wish[]> {
+    return this.usersService.findWishesByUsername(username);
   }
 }

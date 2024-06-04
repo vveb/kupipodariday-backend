@@ -57,4 +57,10 @@ export class WishesController {
   deleteWish(@Param('id') wishId: number, @AuthUser() user: User) {
     return this.wishesService.deleteWishById(wishId, user.id);
   }
+
+  @Post(':id/copy')
+  @UseGuards(JwtAuthGuard)
+  copyWish(@Param('id') wishId: number, @AuthUser() user: User) {
+    return this.wishesService.copyWish(wishId, user);
+  }
 }

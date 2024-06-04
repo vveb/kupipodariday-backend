@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -9,6 +10,7 @@ import { FindOneOptions, FindOptionsOrder, Repository } from 'typeorm';
 import { Wish } from './entities/wish.entity';
 import { UsersService } from '../users/users.service';
 import { UpdateWishDto } from './dto/update-wish.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class WishesService {
@@ -91,5 +93,35 @@ export class WishesService {
       );
     }
     return this.wishesRepository.delete(wishId);
+  }
+
+  async copyWish(wishId: number, user: User): Promise<Wish> {
+    const wish = await this.findWishById(wishId);
+    if (!wish) {
+      throw new NotFoundException(
+        'Такого желания у нас нет :( Но вы можете его создать! ;)',
+      );
+    }
+    const isWishAdded = (await this.wishesRepository.findOne({
+      where: {
+        owner: { id: user.id },
+        name: wish.name,
+      },
+    }))
+      ? true
+      : false;
+    if (isWishAdded) {
+      throw new ConflictException('Вы уже скопировали данное желание');
+    }
+    const wishCopy: CreateWishDto = {
+      name: wish.name,
+      link: wish.link,
+      image: wish.image,
+      price: wish.price,
+      description: wish.description,
+    };
+    return this.create(wishCopy, user.id).then(() => {
+      return this.wishesRepository.save({ ...wish, copied: wish.copied + 1 });
+    });
   }
 }

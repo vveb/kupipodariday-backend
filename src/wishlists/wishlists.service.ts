@@ -1,15 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Wishlist } from './entities/wishlist.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class WishlistsService {
-  create(createWishlistDto: CreateWishlistDto) {
-    return 'This action adds a new wishlist';
-  }
+  constructor(
+    @InjectRepository(Wishlist)
+    private readonly wishlistRepository: Repository<Wishlist>,
+  ) {}
 
   findAll() {
-    return `This action returns all wishlists`;
+    return this.wishlistRepository.find({
+      relations: ['owner', 'items'],
+    });
+  }
+
+  async findAllWishlists(): Promise<Wishlist[]> {
+    const wishlists = await this.findAll();
+    if (!wishlists) {
+      throw new NotFoundException('Списки желаний не найдены');
+    }
+    return wishlists;
   }
 
   findOne(id: number) {

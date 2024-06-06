@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { WishlistsService } from './wishlists.service';
-import { CreateWishlistDto } from './dto/create-wishlist.dto';
-import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Wishlist } from './entities/wishlist.entity';
+import { CreateWishlistDto } from './dto/create-wishlist.dto';
+import { AuthUser } from '../utils/decorators/auth-user.decorator';
+import { User } from '../users/entities/user.entity';
 
-@Controller('wishlists')
+@Controller('wishlistlists')
 export class WishlistsController {
   constructor(private readonly wishlistsService: WishlistsService) {}
 
@@ -13,5 +14,14 @@ export class WishlistsController {
   @UseGuards(JwtAuthGuard)
   getAllWishlists(): Promise<Wishlist[]> {
     return this.wishlistsService.findAllWishlists();
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  createNewWishlist(
+    @Body() createWishlistDto: CreateWishlistDto,
+    @AuthUser() user: User,
+  ): Promise<Wishlist> {
+    return this.wishlistsService.createNewWishlist(createWishlistDto, user);
   }
 }

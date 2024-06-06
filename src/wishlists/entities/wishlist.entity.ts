@@ -29,7 +29,9 @@ export class Wishlist {
   })
   name: string;
 
-  @Column()
+  @Column({
+    default: 'Новая подборка',
+  })
   @Max(1500, {
     message: 'Описание подборки не должно превышать 1 500 символов',
   })

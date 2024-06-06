@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { WishlistsService } from './wishlists.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Wishlist } from './entities/wishlist.entity';
@@ -23,5 +23,11 @@ export class WishlistsController {
     @AuthUser() user: User,
   ): Promise<Wishlist> {
     return this.wishlistsService.createNewWishlist(createWishlistDto, user);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  getWishlistById(@Param('id') id: number) {
+    return this.wishlistsService.findWishlistById(id);
   }
 }

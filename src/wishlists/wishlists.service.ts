@@ -21,6 +21,13 @@ export class WishlistsService {
     });
   }
 
+  findById(id: number) {
+    return this.wishlistRepository.findOne({
+      where: { id },
+      relations: ['owner', 'items'],
+    });
+  }
+
   create(
     createWishlistDto: CreateWishlistDto,
     items: Wish[],
@@ -44,11 +51,18 @@ export class WishlistsService {
   async createNewWishlist(createWishlistDto: CreateWishlistDto, user: User) {
     const wishes = [];
     const { itemsId } = createWishlistDto;
-    await itemsId.forEach(async (wishId) => {
-      const wish = await this.wishesService.findWishById(wishId);
-      wishes.push(wish);
-    });
+    for (const id of itemsId) {
+      wishes.push(await this.wishesService.findWishById(id));
+    }
     delete createWishlistDto.itemsId;
     return await this.create(createWishlistDto, wishes, user);
+  }
+
+  async findWishlistById(id: number) {
+    const wishlist = await this.findById(id);
+    if (!wishlist) {
+      throw new NotFoundException('Такой подборки не существует');
+    }
+    return wishlist;
   }
 }

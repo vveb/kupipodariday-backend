@@ -6,6 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Like, Repository } from 'typeorm';
 import { hashValue } from '../utils/hash';
 import { Wish } from '../wishes/entities/wish.entity';
+import { selectOptionsUserPlusEmail } from '../utils/select-options';
+import relations from '../utils/relations';
 
 @Injectable()
 export class UsersService {
@@ -36,12 +38,15 @@ export class UsersService {
     if (password) {
       updateUserDto.password = await hashValue(password);
     }
-    return this.usersRepository.save({ ...user, ...updateUserDto });
+    return this.usersRepository
+      .save({ ...user, ...updateUserDto })
+      .then(() => this.findCurrentUser(id));
   }
 
   async findCurrentUser(id: number) {
     const user = await this.findOne({
       where: { id },
+      select: selectOptionsUserPlusEmail,
     });
     if (user) {
       return user;
@@ -50,17 +55,17 @@ export class UsersService {
   }
 
   async findCurrentUserWishes(id: number) {
-    const user = await this.findOne({
+    const wishes = await this.findOne({
       where: { id },
-      relations: ['wishes'],
-    });
-    return user.wishes;
+      relations: relations.findCurrentUserWishes,
+    }).then((user) => user.wishes);
+    return wishes;
   }
 
   async findWishesByUsername(username: string): Promise<Wish[]> {
-    const user = await this.findOne({
+    const user = await this.usersRepository.findOne({
       where: { username },
-      relations: ['wishes'],
+      relations: relations.findWishesByUsername,
     });
     if (user) {
       return user.wishes;
@@ -69,7 +74,7 @@ export class UsersService {
   }
 
   async findUserByUsername(username: string): Promise<User> {
-    const user = await this.usersRepository.findOne({
+    const user = await this.findOne({
       where: {
         username: username,
       },
@@ -83,6 +88,7 @@ export class UsersService {
   async findMany(query: string): Promise<User[]> {
     const res = await this.usersRepository.find({
       where: [{ email: Like(`%${query}%`) }, { username: Like(`%${query}%`) }],
+      select: selectOptionsUserPlusEmail,
     });
     if (res.length > 0) {
       return res;

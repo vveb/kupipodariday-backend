@@ -50,7 +50,9 @@ export class OffersService {
   }
 
   findAllOffers() {
-    return this.offersRepository.find();
+    return this.offersRepository.find({
+      relations: ['item'],
+    });
   }
 
   async findOfferById(id: number) {

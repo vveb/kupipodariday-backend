@@ -32,7 +32,7 @@ export class WishesService {
     return this.wishesRepository.findOneOrFail(query);
   }
 
-  async findManyWishesById(wishIds) {
+  async findManyWishesById(wishIds: number[]) {
     const wishes = [];
     for (const id of wishIds) {
       wishes.push(await this.findWishById(id));

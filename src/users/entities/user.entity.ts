@@ -44,7 +44,6 @@ export class User {
   @MinLength(8, {
     message: 'Пароль должен содержать не менее 8-ми символов',
   })
-  //@Exclude()
   password: string;
 
   @OneToMany(() => Wish, (wish) => wish.owner, { onDelete: 'CASCADE' })

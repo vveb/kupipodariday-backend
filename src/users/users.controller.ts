@@ -35,7 +35,7 @@ export class UsersController {
 
   @Get('me/wishes')
   @UseGuards(JwtAuthGuard)
-  getCurrentUserWishes(@AuthUser() user: User): Promise<Wish[]> {
+  getCurrentUserWishes(@AuthUser() user: User) {
     return this.usersService.findCurrentUserWishes(user.id);
   }
 

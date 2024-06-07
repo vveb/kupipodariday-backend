@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsOptional, IsUrl, Length, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsUrl,
+  Length,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateWishlistDto {
   @Length(1, 250, {
@@ -7,7 +13,7 @@ export class CreateWishlistDto {
   name: string;
 
   @IsOptional()
-  @Max(1500, {
+  @MaxLength(1500, {
     message: 'Описание подборки не должно превышать 1 500 символов',
   })
   description: string;

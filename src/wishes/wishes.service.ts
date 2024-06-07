@@ -32,6 +32,14 @@ export class WishesService {
     return this.wishesRepository.findOneOrFail(query);
   }
 
+  async findManyWishesById(wishIds) {
+    const wishes = [];
+    for (const id of wishIds) {
+      wishes.push(await this.findWishById(id));
+    }
+    return wishes;
+  }
+
   async create(createWishDto: CreateWishDto, userId: number) {
     const owner = await this.usersService.findById(userId);
     const wish = await this.wishesRepository.create({

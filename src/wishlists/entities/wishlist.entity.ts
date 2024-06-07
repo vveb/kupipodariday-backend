@@ -1,4 +1,4 @@
-import { IsUrl, Length, Max } from 'class-validator';
+import { IsUrl, Length, MaxLength } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -32,7 +32,7 @@ export class Wishlist {
   @Column({
     default: 'Новая подборка',
   })
-  @Max(1500, {
+  @MaxLength(1500, {
     message: 'Описание подборки не должно превышать 1 500 символов',
   })
   description: string;

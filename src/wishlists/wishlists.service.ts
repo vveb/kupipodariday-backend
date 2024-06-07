@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Wishlist } from './entities/wishlist.entity';
@@ -6,6 +11,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { Wish } from '../wishes/entities/wish.entity';
+import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 
 @Injectable()
 export class WishlistsService {
@@ -40,6 +46,22 @@ export class WishlistsService {
     });
   }
 
+  update(
+    wishlist: Wishlist,
+    updateWishlistDto: UpdateWishlistDto,
+    items: Wish[],
+  ) {
+    const { name, description, image } = updateWishlistDto;
+    return this.wishlistRepository.save({
+      id: wishlist.id,
+      name: name ? name : wishlist.name,
+      description: description ? description : wishlist.description,
+      image: image ? image : wishlist.image,
+      items: items ? items : wishlist.items,
+      owner: wishlist.owner,
+    });
+  }
+
   async findAllWishlists(): Promise<Wishlist[]> {
     const wishlists = await this.findAll();
     if (wishlists.length == 0) {
@@ -49,10 +71,10 @@ export class WishlistsService {
   }
 
   async createNewWishlist(createWishlistDto: CreateWishlistDto, user: User) {
-    const wishes = [];
     const { itemsId } = createWishlistDto;
-    for (const id of itemsId) {
-      wishes.push(await this.wishesService.findWishById(id));
+    const wishes = await this.wishesService.findManyWishesById(itemsId);
+    if (wishes?.length === 0) {
+      throw new BadRequestException('Нельзя создать пустую подборку');
     }
     delete createWishlistDto.itemsId;
     return await this.create(createWishlistDto, wishes, user);
@@ -64,5 +86,40 @@ export class WishlistsService {
       throw new NotFoundException('Такой подборки не существует');
     }
     return wishlist;
+  }
+
+  async updateWishlistById(
+    id: number,
+    updateWishlistDto: UpdateWishlistDto,
+    user: User,
+  ) {
+    const wishlist = await this.findById(id);
+    if (!wishlist) {
+      throw new NotFoundException('Такой подборки не существует');
+    }
+    if (wishlist.owner.id !== user.id) {
+      throw new ForbiddenException(
+        'Это не Ваша подборка, так что и редактировать ее не получится',
+      );
+    }
+    let wishes;
+    const { itemsId } = updateWishlistDto;
+    if (itemsId) {
+      wishes = await this.wishesService.findManyWishesById(itemsId);
+    }
+    return this.update(wishlist, updateWishlistDto, wishes);
+  }
+
+  async deleteWishlistById(id: number, user: User) {
+    const wishlist = await this.findWishlistById(id);
+    if (!wishlist) {
+      throw new NotFoundException('Такая подборка не найдена');
+    }
+    if (wishlist.owner.id !== user.id) {
+      throw new ForbiddenException(
+        'Это не ваша подборка, так что и удалить ее не получится',
+      );
+    }
+    return this.wishlistRepository.delete(id);
   }
 }

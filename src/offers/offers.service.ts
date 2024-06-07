@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { UpdateOfferDto } from './dto/update-offer.dto';
+import { Repository } from 'typeorm';
+import { Offer } from './entities/offer.entity';
+import { WishesService } from '../wishes/wishes.service';
+import { User } from '../users/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class OffersService {
-  create(createOfferDto: CreateOfferDto) {
-    return 'This action adds a new offer';
+  constructor(
+    @InjectRepository(Offer)
+    private readonly offersRepository: Repository<Offer>,
+    private readonly wishesService: WishesService,
+  ) {}
+
+  async createNewOffer(createOfferDto: CreateOfferDto, user: User) {
+    const { amount, itemId } = createOfferDto;
+    const wish = await this.wishesService.findWishById(itemId);
+    if (!wish) {
+      throw new NotFoundException('Нельзя поддержать то, чего нет');
+    }
+    if (wish.owner.id === user.id) {
+      throw new ForbiddenException('Нельзя самоподдержаться, иначе смысл');
+    }
+    if (
+      amount > wish.price ||
+      amount > Number(wish.price) - Number(wish.raised)
+    ) {
+      throw new ForbiddenException(
+        'Вы очень щедрый человек, но этого многовато',
+      );
+    }
+    if (wish.price === wish.raised) {
+      throw new ForbiddenException('Необходимая сумма уже собрана');
+    }
+    await this.wishesService.updateWishByRaise(
+      wish.id,
+      Number(wish.raised) + Number(amount),
+    );
+    return await this.offersRepository.save({
+      ...createOfferDto,
+      user,
+      item: wish,
+    });
   }
 
-  findAll() {
-    return `This action returns all offers`;
+  findAllOffers() {
+    return this.offersRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} offer`;
-  }
-
-  update(id: number, updateOfferDto: UpdateOfferDto) {
-    return `This action updates a #${id} offer`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} offer`;
+  async findOfferById(id: number) {
+    const offer = await this.offersRepository.findOneBy({ id });
+    if (!offer) {
+      throw new NotFoundException('Донат не найден');
+    }
+    return offer;
   }
 }

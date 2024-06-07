@@ -132,4 +132,8 @@ export class WishesService {
       return this.wishesRepository.save({ ...wish, copied: wish.copied + 1 });
     });
   }
+
+  async updateWishByRaise(id: number, amount: number) {
+    return this.wishesRepository.update({ id }, { raised: amount });
+  }
 }

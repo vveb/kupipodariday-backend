@@ -9,6 +9,7 @@ import { Offer } from './entities/offer.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { User } from '../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import relations from '../utils/relations';
 
 @Injectable()
 export class OffersService {
@@ -51,12 +52,15 @@ export class OffersService {
 
   findAllOffers() {
     return this.offersRepository.find({
-      relations: ['item'],
+      relations: relations.findOffers,
     });
   }
 
   async findOfferById(id: number) {
-    const offer = await this.offersRepository.findOneBy({ id });
+    const offer = await this.offersRepository.findOne({
+      where: { id },
+      relations: relations.findOffers,
+    });
     if (!offer) {
       throw new NotFoundException('Донат не найден');
     }

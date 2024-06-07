@@ -21,6 +21,25 @@ const relations = {
       offers: true,
     },
   },
+  findOffers: {
+    item: {
+      owner: true,
+      offers: true,
+    },
+    user: {
+      wishes: {
+        owner: true,
+        offers: true,
+      },
+      offers: {
+        user: true,
+      },
+      wishlists: {
+        owner: true,
+        items: true,
+      },
+    },
+  },
 };
 
 export default relations;

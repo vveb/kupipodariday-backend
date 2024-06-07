@@ -80,7 +80,7 @@ export class WishesService {
         'Это не ваше желание, так что и менять его нельзя',
       );
     }
-    if (updateWishDto.price && wish?.offers.length > 0) {
+    if (updateWishDto.price && wish.offers.length > 0) {
       throw new ForbiddenException(
         'Это желание поменять не получится, так как кто-то уже решил его поддержать',
       );

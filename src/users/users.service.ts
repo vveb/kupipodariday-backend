@@ -88,7 +88,7 @@ export class UsersService {
   async findMany(query: string): Promise<User[]> {
     const res = await this.usersRepository.find({
       where: [{ email: Like(`%${query}%`) }, { username: Like(`%${query}%`) }],
-      select: selectOptionsUserPlusEmail,
+      select: selectOptionsUserPlusEmail, //Согласно описанию API здесь возвращается email
     });
     if (res.length > 0) {
       return res;

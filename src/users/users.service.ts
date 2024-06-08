@@ -26,7 +26,7 @@ export class UsersService {
   }
 
   findOne(query: FindOneOptions<User>) {
-    return this.usersRepository.findOneOrFail(query);
+    return this.usersRepository.findOne(query);
   }
 
   async signup(createUserDto: CreateUserDto): Promise<User> {
@@ -83,7 +83,7 @@ export class UsersService {
   }
 
   async findWishesByUsername(username: string): Promise<Wish[]> {
-    const user = await this.usersRepository.findOne({
+    const user = await this.findOne({
       where: { username },
       relations: relations.findWishesByUsername,
     });

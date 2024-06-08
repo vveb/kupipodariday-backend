@@ -11,6 +11,7 @@ import { Wish } from './entities/wish.entity';
 import { UsersService } from '../users/users.service';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { User } from '../users/entities/user.entity';
+import { ERR_MSG } from '../utils/error-messages';
 
 @Injectable()
 export class WishesService {
@@ -71,19 +72,13 @@ export class WishesService {
   ): Promise<Wish> {
     const wish = await this.findWishById(wishId);
     if (!wish) {
-      throw new NotFoundException(
-        'Такого желания у нас нет :( Но вы можете его создать! ;)',
-      );
+      throw new NotFoundException(ERR_MSG.WISH.NOT_FOUND);
     }
     if (wish.owner.id !== userId) {
-      throw new ForbiddenException(
-        'Это не ваше желание, так что и менять его нельзя',
-      );
+      throw new ForbiddenException(ERR_MSG.WISH.FORBIDDEN_CHANGE);
     }
     if (updateWishDto.price && wish.offers.length > 0) {
-      throw new ForbiddenException(
-        'Это желание поменять не получится, так как кто-то уже решил его поддержать',
-      );
+      throw new ForbiddenException(ERR_MSG.WISH.FORBIDDEN_RAISED);
     }
     return this.wishesRepository.save({ ...wish, ...updateWishDto });
   }
@@ -91,14 +86,10 @@ export class WishesService {
   async deleteWishById(wishId: number, userId: number) {
     const wish = await this.findWishById(wishId);
     if (!wish) {
-      throw new NotFoundException(
-        'Такого желания у нас нет :( Но вы можете его создать! ;)',
-      );
+      throw new NotFoundException(ERR_MSG.WISH.NOT_FOUND);
     }
     if (wish.owner.id != userId) {
-      throw new ForbiddenException(
-        'Это не ваше желание, так что и удалить его нельзя',
-      );
+      throw new ForbiddenException(ERR_MSG.WISH.FORBIDDEN_DELETE);
     }
     return this.wishesRepository.delete(wishId);
   }
@@ -106,9 +97,7 @@ export class WishesService {
   async copyWish(wishId: number, user: User): Promise<Wish> {
     const wish = await this.findWishById(wishId);
     if (!wish) {
-      throw new NotFoundException(
-        'Такого желания у нас нет :( Но вы можете его создать! ;)',
-      );
+      throw new NotFoundException(ERR_MSG.WISH.NOT_FOUND);
     }
     const isWishAdded = (await this.wishesRepository.findOne({
       where: {
@@ -119,7 +108,7 @@ export class WishesService {
       ? true
       : false;
     if (isWishAdded) {
-      throw new ConflictException('Вы уже скопировали данное желание');
+      throw new ConflictException(ERR_MSG.WISH.ALREADY_COPIED);
     }
     const wishCopy: CreateWishDto = {
       name: wish.name,

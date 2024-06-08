@@ -10,6 +10,7 @@ import { WishesService } from '../wishes/wishes.service';
 import { User } from '../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import relations from '../utils/relations';
+import { ERR_MSG } from '../utils/error-messages';
 
 @Injectable()
 export class OffersService {
@@ -23,21 +24,19 @@ export class OffersService {
     const { amount, itemId } = createOfferDto;
     const wish = await this.wishesService.findWishById(itemId);
     if (!wish) {
-      throw new NotFoundException('Нельзя поддержать то, чего нет');
+      throw new NotFoundException(ERR_MSG.OFFER.NOT_FOUND_WISH);
     }
     if (wish.owner.id === user.id) {
-      throw new ForbiddenException('Нельзя самоподдержаться, иначе смысл');
+      throw new ForbiddenException(ERR_MSG.OFFER.SELF_SUPPORT);
     }
     if (
       amount > wish.price ||
       amount > Number(wish.price) - Number(wish.raised)
     ) {
-      throw new ForbiddenException(
-        'Вы очень щедрый человек, но этого многовато',
-      );
+      throw new ForbiddenException(ERR_MSG.OFFER.TOO_MUCH);
     }
     if (wish.price === wish.raised) {
-      throw new ForbiddenException('Необходимая сумма уже собрана');
+      throw new ForbiddenException(ERR_MSG.OFFER.COLLECTED);
     }
     await this.wishesService.updateWishByRaise(
       wish.id,
@@ -62,7 +61,7 @@ export class OffersService {
       relations: relations.findOffers,
     });
     if (!offer) {
-      throw new NotFoundException('Донат не найден');
+      throw new NotFoundException(ERR_MSG.OFFER.NOT_FOUND);
     }
     return offer;
   }

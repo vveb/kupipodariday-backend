@@ -12,6 +12,7 @@ import { User } from '../users/entities/user.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { Wish } from '../wishes/entities/wish.entity';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import { ERR_MSG } from '../utils/error-messages';
 
 @Injectable()
 export class WishlistsService {
@@ -65,7 +66,7 @@ export class WishlistsService {
   async findAllWishlists(): Promise<Wishlist[]> {
     const wishlists = await this.findAll();
     if (wishlists.length == 0) {
-      throw new NotFoundException('Списки желаний не найдены');
+      throw new NotFoundException(ERR_MSG.WISHLIST.NOT_FOUND_MANY);
     }
     return wishlists;
   }
@@ -74,7 +75,7 @@ export class WishlistsService {
     const { itemsId } = createWishlistDto;
     const wishes = await this.wishesService.findManyWishesById(itemsId);
     if (wishes?.length === 0) {
-      throw new BadRequestException('Нельзя создать пустую подборку');
+      throw new BadRequestException(ERR_MSG.WISHLIST.NOT_EMPTY);
     }
     delete createWishlistDto.itemsId;
     return await this.create(createWishlistDto, wishes, user);
@@ -83,7 +84,7 @@ export class WishlistsService {
   async findWishlistById(id: number) {
     const wishlist = await this.findById(id);
     if (!wishlist) {
-      throw new NotFoundException('Такой подборки не существует');
+      throw new NotFoundException(ERR_MSG.WISHLIST.NOT_FOUND_ONE);
     }
     return wishlist;
   }
@@ -95,12 +96,10 @@ export class WishlistsService {
   ) {
     const wishlist = await this.findById(id);
     if (!wishlist) {
-      throw new NotFoundException('Такой подборки не существует');
+      throw new NotFoundException(ERR_MSG.WISHLIST.NOT_FOUND_ONE);
     }
     if (wishlist.owner.id !== user.id) {
-      throw new ForbiddenException(
-        'Это не Ваша подборка, так что и редактировать ее не получится',
-      );
+      throw new ForbiddenException(ERR_MSG.WISHLIST.FORBIDDEN_CHANGE);
     }
     let wishes;
     const { itemsId } = updateWishlistDto;
@@ -113,12 +112,10 @@ export class WishlistsService {
   async deleteWishlistById(id: number, user: User) {
     const wishlist = await this.findWishlistById(id);
     if (!wishlist) {
-      throw new NotFoundException('Такая подборка не найдена');
+      throw new NotFoundException(ERR_MSG.WISHLIST.NOT_FOUND_ONE);
     }
     if (wishlist.owner.id !== user.id) {
-      throw new ForbiddenException(
-        'Это не ваша подборка, так что и удалить ее не получится',
-      );
+      throw new ForbiddenException(ERR_MSG.WISHLIST.FORBIDDEN_DELETE);
     }
     return this.wishlistRepository.delete(id);
   }

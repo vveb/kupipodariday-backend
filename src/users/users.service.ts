@@ -12,7 +12,10 @@ import { hashValue } from '../utils/hash';
 import { Wish } from '../wishes/entities/wish.entity';
 import { selectOptionsUserPlusEmail } from '../utils/select-options';
 import relations from '../utils/relations';
-import { defineErrMessageConflictUsers } from '../utils/error-messages';
+import {
+  ERR_MSG,
+  defineErrMessageConflictUsers,
+} from '../utils/error-messages';
 
 @Injectable()
 export class UsersService {
@@ -71,7 +74,7 @@ export class UsersService {
     if (user) {
       return user;
     }
-    throw new NotFoundException('Пользователь не найден');
+    throw new NotFoundException(ERR_MSG.USER.NOT_FOUND);
   }
 
   async findCurrentUserWishes(id: number) {
@@ -90,7 +93,7 @@ export class UsersService {
     if (user) {
       return user.wishes;
     }
-    throw new NotFoundException('Пользователь не найден');
+    throw new NotFoundException(ERR_MSG.USER.NOT_FOUND);
   }
 
   async findUserByUsername(username: string): Promise<User> {
@@ -102,7 +105,7 @@ export class UsersService {
     if (user) {
       return user;
     }
-    throw new NotFoundException('Пользователь не найден');
+    throw new NotFoundException(ERR_MSG.USER.NOT_FOUND);
   }
 
   async findMany(query: string): Promise<User[]> {

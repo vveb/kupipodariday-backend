@@ -1,13 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Like, Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { hashValue } from '../utils/hash';
 import { Wish } from '../wishes/entities/wish.entity';
 import { selectOptionsUserPlusEmail } from '../utils/select-options';
 import relations from '../utils/relations';
+import { defineErrMessageConflictUsers } from '../utils/error-messages';
 
 @Injectable()
 export class UsersService {
@@ -25,11 +30,17 @@ export class UsersService {
   }
 
   async signup(createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.usersRepository.create({
+    const check = await this.checkUserExistence(
+      createUserDto.email,
+      createUserDto.username,
+    );
+    if (check.isExists) {
+      throw new ConflictException(check.errMessage);
+    }
+    return this.usersRepository.create({
       ...createUserDto,
       password: await hashValue(createUserDto.password),
     });
-    return this.usersRepository.save(user);
   }
 
   async updateCurrentUser(id: number, updateUserDto: UpdateUserDto) {
@@ -87,12 +98,19 @@ export class UsersService {
 
   async findMany(query: string): Promise<User[]> {
     const res = await this.usersRepository.find({
-      where: [{ email: Like(`%${query}%`) }, { username: Like(`%${query}%`) }],
+      where: [{ email: query }, { username: query }],
       select: selectOptionsUserPlusEmail, //Согласно описанию API здесь возвращается email
     });
-    if (res.length > 0) {
-      return res;
+    return res;
+  }
+
+  async checkUserExistence(email: string, username: string) {
+    const emailExists = (await this.findMany(email)).length > 0;
+    const usernameExists = (await this.findMany(username)).length > 0;
+    let errMessage;
+    if (emailExists || usernameExists) {
+      errMessage = defineErrMessageConflictUsers(emailExists, usernameExists);
     }
-    throw new NotFoundException('Пользователи не найдены');
+    return { isExists: emailExists || usernameExists, errMessage };
   }
 }

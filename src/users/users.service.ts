@@ -30,28 +30,37 @@ export class UsersService {
   }
 
   async signup(createUserDto: CreateUserDto): Promise<User> {
-    const check = await this.checkUserExistence(
+    const checkExistence = await this.checkUserExistence(
       createUserDto.email,
       createUserDto.username,
     );
-    if (check.isExists) {
-      throw new ConflictException(check.errMessage);
+    if (checkExistence.isExists) {
+      throw new ConflictException(checkExistence.errMessage);
     }
-    return this.usersRepository.create({
-      ...createUserDto,
-      password: await hashValue(createUserDto.password),
-    });
+    return this.usersRepository
+      .save({
+        ...createUserDto,
+        password: await hashValue(createUserDto.password),
+      })
+      .then((newUser) => this.findCurrentUser(newUser.id));
   }
 
-  async updateCurrentUser(id: number, updateUserDto: UpdateUserDto) {
+  async updateCurrentUser(userId: number, updateUserDto: UpdateUserDto) {
+    const user = await this.findCurrentUser(userId);
+    const isSameEmail = user.email === updateUserDto.email;
+    const isSameUsername = user.username === updateUserDto.username;
+    const checkExistence = await this.checkUserExistence(
+      isSameEmail ? null : updateUserDto.email,
+      isSameUsername ? null : updateUserDto.username,
+    );
+    if (checkExistence.isExists) {
+      throw new ConflictException(checkExistence.errMessage);
+    }
     const password = updateUserDto.password;
-    const user = await this.findById(id);
     if (password) {
       updateUserDto.password = await hashValue(password);
     }
-    return this.usersRepository
-      .save({ ...user, ...updateUserDto })
-      .then(() => this.findCurrentUser(id));
+    return this.usersRepository.save({ ...user, ...updateUserDto });
   }
 
   async findCurrentUser(id: number) {
@@ -105,8 +114,10 @@ export class UsersService {
   }
 
   async checkUserExistence(email: string, username: string) {
-    const emailExists = (await this.findMany(email)).length > 0;
-    const usernameExists = (await this.findMany(username)).length > 0;
+    const emailExists = email ? (await this.findMany(email)).length > 0 : false;
+    const usernameExists = username
+      ? (await this.findMany(username)).length > 0
+      : false;
     let errMessage;
     if (emailExists || usernameExists) {
       errMessage = defineErrMessageConflictUsers(emailExists, usernameExists);
